@@ -1,0 +1,25 @@
+{
+  "train": [
+    "chb_s24_r04",
+    "chb_s24_r07",
+    "chb_s24_r09",
+    "chb_s24_r11",
+    "chb_s24_r13",
+    "chb_s24_r14",
+    "chb_s24_r15",
+    "chb_s24_r17",
+    "chb_s12_r06",
+    "chb_s12_r08",
+    "chb_s12_r23"
+  ],
+  "validation": [
+    "chb_s24_r03",
+    "chb_s24_r06",
+    "chb_s12_r38"
+  ],
+  "test": [
+    "chb_s24_r01",
+    "chb_s24_r21",
+    "chb_s12_r42"
+  ]
+}

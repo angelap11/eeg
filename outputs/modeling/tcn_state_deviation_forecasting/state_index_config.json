@@ -1,0 +1,50 @@
+{
+  "method": "PCA-whitened Euclidean distance from a TRAIN stable-baseline centroid (Mahalanobis distance under a rank-truncated/regularized baseline covariance)",
+  "baseline_definition": "TRAIN-recording epochs with y_seizure == 0 and forecast_class == 3 (>120s to next seizure)",
+  "datasets_used": [
+    "chb24",
+    "chb12"
+  ],
+  "n_baseline_epochs": 1213,
+  "n_train_epochs_total": 1320,
+  "baseline_covariance_numerical_rank": 13,
+  "baseline_covariance_condition_number": 9152531498.146418,
+  "variance_retain_threshold": 0.99,
+  "n_components_kept": 8,
+  "cumulative_variance_kept": 0.9915054811971398,
+  "pca_explained_variance_ratio_all_components": [
+    0.42549185820183383,
+    0.31607516818479636,
+    0.12304236553387404,
+    0.07045545830662844,
+    0.030202718623362036,
+    0.014010966400000538,
+    0.007552595098147156,
+    0.004674350848497314,
+    0.003408675708436631,
+    0.002938701675445588,
+    0.001979844568052886,
+    0.00016725561255581767,
+    4.1191880411891506e-08,
+    4.6488947157400146e-11
+  ],
+  "pca_eigenvalues_all_components": [
+    5.96180093728015,
+    4.428703387883012,
+    1.7240143989242978,
+    0.9871902582204324,
+    0.4231869370147971,
+    0.19631537244621214,
+    0.10582357257156352,
+    0.0654949060306777,
+    0.047760834059959456,
+    0.04117576885512952,
+    0.027740693444450588,
+    0.0023435105713060195,
+    5.771621395666184e-07,
+    6.51382261243374e-10
+  ],
+  "mean_index_baseline_epochs": 2.356789576158258,
+  "mean_index_train_near_seizure_epochs": 2.3996250186236705,
+  "mean_index_seizure_overlapping_epochs": 11.350470507670083
+}

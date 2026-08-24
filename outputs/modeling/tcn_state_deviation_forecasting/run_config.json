@@ -1,0 +1,17 @@
+{
+  "datasets_used": [
+    "chb24",
+    "chb12"
+  ],
+  "sequence_length": 10,
+  "batch_size": 32,
+  "max_epochs": 40,
+  "learning_rate": 0.001,
+  "patience": 8,
+  "random_seed": 42,
+  "index_method": "PCA-whitened Mahalanobis-equivalent distance from TRAIN stable baseline (see state_index_config.json for full detail)",
+  "n_train_sequences": 1186,
+  "n_val_sequences": 318,
+  "n_test_sequences": 318,
+  "best_val_macro_f1": 0.2637691570881226
+}
