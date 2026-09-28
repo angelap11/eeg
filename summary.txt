@@ -1,0 +1,806 @@
+STATUS AUDIT — Verified Against Repository, Not Just project_state.md
+======================================================================
+
+Read first, as requested:
+- CLAUDE.md — does not exist in the repo. Several notebooks *reference*
+  "established, CLAUDE.md" in comments (e.g. epoch convention, filter
+  params), but no such file is present at the repo root. This is a real
+  discrepancy, flagged, not silently treated as undocumented.
+- .claude/rules/notebooks.md, .claude/skills/eeg-context/SKILL.md,
+  .claude/skills/preprocessing-review/SKILL.md — read in full.
+- project_state.md (1612 lines) — read in full, then checked line-by-line
+  against the actual .ipynb files and outputs/.
+- All 11 notebooks — inspected cell-by-cell (source + execution counts,
+  not just markdown claims).
+- outputs/ and outputs/modeling/ — inspected directory contents and the
+  actual CSV/JSON numbers, not just filenames.
+
+Every claim below is either VERIFIED (opened the file / ran a read-only
+check) or explicitly marked UNVERIFIED/STALE.
+
+----------------------------------------------------------------------
+1. LABEL CORRECTION (postictal exclusion, >=30 min)
+----------------------------------------------------------------------
+STATUS: IMPLEMENTED
+
+- Where: EEG_binary_preictal_labeling.ipynb, function
+  make_binary_labels(df, preictal_minutes, exclusion_minutes=30).
+- Exact rule (read from the actual function body):
+  - exclusion_minutes < 30 -> hard
+    raise ValueError("Supervisor requirement: exclusion_minutes must be
+    >= 30.") — not a soft default, a hard assertion.
+  - INTERICTAL = y_seizure==0 AND >=30 min from the NEXT seizure AND
+    >=30 min from the END of the PREVIOUS seizure
+    (time_since_previous_seizure_sec, a genuinely new column — didn't
+    exist before this task).
+  - Anything postictal-contaminated (within 30 min of a previous
+    seizure's end) is excluded with exclusion_reason="postictal_exclusion"
+    — from BOTH classes, not just INTERICTAL (an otherwise-PREICTAL epoch
+    too close to the PREVIOUS seizure is also excluded).
+- Validation evidence (verified in outputs/labels_binary_preictal.parquet,
+  2040 rows):
+    H=5 min : PREICTAL=170, INTERICTAL=372, EXCLUDED=1498
+    H=15 min: PREICTAL=445, INTERICTAL=372, EXCLUDED=1223
+    H=30 min: PREICTAL=732, INTERICTAL=372, EXCLUDED= 936
+  INTERICTAL count is identical across horizons (as it should be —
+  exclusion window is fixed), PREICTAL grows with horizon — internally
+  consistent.
+- Still problematic: only 19 of 35 annotated seizures (across both
+  patients) produce even one usable PREICTAL epoch at any horizon — the
+  rest are so close to a preceding seizure that their entire nominal
+  preictal window is inside that seizure's postictal exclusion zone.
+  Real data property, correctly surfaced
+  (outputs/loso_ineligible_seizures.csv), not a bug — but it caps how
+  many seizure events you can ever evaluate on.
+
+Simple language: Ema's rule — "don't call the 30 minutes after a
+seizure 'normal brain activity'" — is coded correctly and mathematically
+enforced (the function literally refuses to run with a looser window).
+Verified with real numbers, not just described.
+
+----------------------------------------------------------------------
+2. BINARY PREICTAL VS INTERICTAL
+----------------------------------------------------------------------
+STATUS: IMPLEMENTED (labeling only — see rows 7/8/9 for modeling status)
+
+- Same notebook as above. Replaces the old 4-class
+  0-30/30-60/60-120/>120s target.
+- ALL THREE HORIZONS (5/15/30 min) run from one shared function —
+  verified: the loop "for H in HORIZONS: label, reason =
+  make_binary_labels(...)" calls the SAME function three times, writing
+  binary_label_h5, binary_label_h15, binary_label_h30 as columns in one
+  combined table — not three separate pipelines/notebooks.
+- Eligible seizures (verified in EEG_loso_evaluation_splitting.ipynb
+  output): identical set at all 3 horizons — chb12: 5/19, chb24: 14/16
+  -> 19/35 total.
+- Old 4-class notebooks (EEG_TCN_seizure_forecasting.ipynb,
+  EEG_TCN_state_deviation_forecasting.ipynb) are UNTOUCHED on disk —
+  confirmed no code cell differs from what produced their saved outputs;
+  they remain as historical comparison only.
+
+----------------------------------------------------------------------
+3. PATIENT-SPECIFIC NORMALIZATION
+----------------------------------------------------------------------
+STATUS: IMPLEMENTED
+
+- Where: EEG_patient_normalization.ipynb (demonstration fold) and reused
+  verbatim inside EEG_loso_evaluation_splitting.ipynb /
+  EEG_logistic_loso_binary.ipynb (the actual per-fold fit).
+- Which patients work: chb12, chb24 only (the only two with binary
+  labels — CHB01 never entered this pipeline; see row 11).
+- Leakage sequence verified against required diagram —
+  fit_patient_scalers(df, patient_col, feature_cols, train_mask) fits one
+  StandardScaler per patient on TRAIN rows only;
+  transform_with_patient_scalers then transforms every row (TRAIN and
+  TEST) with its own patient's TRAIN-fit scaler. Matches the required
+  order exactly.
+- Are patients ever pooled incorrectly? Yes, historically — but it's
+  flagged, not hidden: EEG_TCN_state_deviation_forecasting.ipynb fits ONE
+  scaler pooled across CHB12+CHB24. This is the old 4-class model. A
+  non-destructive markdown deprecation note was inserted directly above
+  that scaler cell (verified present) explaining the gap — the code
+  itself was not changed, so the old results remain reproducible for
+  comparison. The NEW pipeline (rows 5-9) never pools patients — verified
+  structurally (folds are built from a single-patient patient_df before
+  any split) and re-asserted at runtime in the fold loop.
+- Leakage validation evidence (verified in notebook output, both
+  patients): scaler.n_samples_seen_ exactly equals that patient's TRAIN
+  row count; independently recomputed TRAIN-only mean matches
+  scaler.mean_ exactly; one patient's fitted mean is not reproducible
+  from another patient's TRAIN rows; TEST-scaled features do NOT have
+  mean~=0/std~=1 (the correct signature of no leakage) while
+  TRAIN-scaled features do.
+
+Simple language: each patient gets their own personal "normal EEG"
+scale, computed only from that patient's training data, never peeking at
+test data or mixing in another patient's numbers. Checked with real
+math, not just claimed.
+
+----------------------------------------------------------------------
+4. SPLIT BY SEIZURE (LOSO)
+----------------------------------------------------------------------
+STATUS: IMPLEMENTED
+
+- Where: EEG_loso_evaluation_splitting.ipynb; folds rebuilt fresh (not
+  just read from a manifest) and cross-checked inside
+  EEG_logistic_loso_binary.ipynb.
+- Eligible seizures per patient: chb12: 5/19, chb24: 14/16 (constant
+  across horizons — verified above).
+- Number of folds: 57 = 19 eligible seizures x 3 horizons. One fold = one
+  held-out seizure at one horizon.
+- How TEST is defined: the held-out seizure's own PREICTAL epochs + that
+  recording's INTERICTAL epochs tied to it (next_seizure_id/
+  previous_seizure_id logic) — never a random row split. Recording-level
+  folding was explicitly considered and REJECTED because two CHB24
+  recordings each contain two eligible seizures, which would leak one
+  seizure's PREICTAL data out of TRAIN if the whole recording were held
+  out.
+- INTERICTAL test handling — a real limitation, correctly surfaced, not
+  hidden: 10 of the 19 folds (all 5 CHB12 folds + 5 CHB24 folds) have
+  ZERO TEST interictal epochs at every horizon. This means false-alarm
+  rate cannot be computed for those folds at all — verified directly in
+  patient_horizon_summary.csv: CHB12's FA/hour and AUC-PR are literally
+  NaN for every horizon.
+- Leakage checks: 9 checks per fold (TRAIN/TEST disjoint, held-out
+  seizure's PREICTAL never in TRAIN, scaler sample counts, single patient
+  per fold, feature order, no seizure-overlap rows used, non-null
+  chronology, etc.) — 57/57 FOLDS PASSED ALL 9, verified as an explicit
+  assertion in the notebook, not a summary claim.
+
+----------------------------------------------------------------------
+5. SEIZURE-PREDICTION METRICS
+----------------------------------------------------------------------
+STATUS: IMPLEMENTED — verified to exist in code, not just planned
+
+- Where: EEG_seizure_prediction_metrics.ipynb (self-tested on synthetic
+  data), reused verbatim in EEG_logistic_loso_binary.ipynb.
+- Primary (event-level), fold_seizure_event_metrics():
+  - Seizure sensitivity: binary per fold, did >=1 true PREICTAL TEST
+    epoch get predicted PREICTAL.
+  - Time in warning: time_to_next_seizure_sec of the earliest
+    correctly-alarmed epoch; NaN (never 0) if undetected.
+  - False alarms/hour: consecutive positive INTERICTAL predictions
+    merged into one "alarm event" before counting (so one sustained
+    false alarm != many), divided by TEST-interictal hours; NaN when a
+    fold has zero interictal hours.
+- Secondary (epoch-level): accuracy/precision/recall/F1 with
+  zero_division=np.nan (never silently 0), AUC-PR explicitly forced to
+  NaN (not sklearn's degenerate 1.0) when TEST has only one class.
+- Handling of zero-interictal folds: explicit NaN, verified in real
+  output (overall_horizon_summary.csv, patient_horizon_summary.csv —
+  CHB12 rows literally show blank/NaN for FA/hour and AUC-PR with a
+  stated reason string "only one class present in y_true (AUC-PR is not
+  meaningful)").
+- Aggregation: event counts and interictal-hours are SUMMED across folds
+  before dividing once (not averaged per-fold rates); epoch metrics
+  computed on the CONCATENATION of TEST epochs across folds — both
+  documented as chosen conventions, not literature-standard.
+- What's still missing: no statistical significance / confidence
+  intervals on any pooled metric; no ROC-AUC or calibration metrics
+  (intentionally out of scope).
+
+----------------------------------------------------------------------
+6. MODEL COMPARISON
+----------------------------------------------------------------------
+Logistic Regression: IMPLEMENTED
+- EEG_logistic_loso_binary.ipynb, all 15 code cells executed with
+  outputs. class_weight="balanced", threshold fixed at 0.5 (not tuned on
+  TEST), C at sklearn default (not tuned), compared against a
+  DummyClassifier(strategy="most_frequent") sanity baseline. Runs on all
+  57 LOSO folds, both patients, all 3 horizons, using the same
+  normalization/metrics as rows 3-5.
+- Verified pooled results:
+    H= 5 min: sensitivity 0.947 (18/19)  FA/hour 13.65  AUC-PR 0.536
+    H=15 min: sensitivity 0.947 (18/19)  FA/hour 13.29  AUC-PR 0.650
+    H=30 min: sensitivity 0.947 (18/19)  FA/hour 12.57  AUC-PR 0.736
+  Per-patient breakdown (verified separately): CHB12 sensitivity 1.0 but
+  FA/hour and AUC-PR undefined (no TEST interictal data — see row 4);
+  CHB24 13/14 detected, FA/hour ~12-14/hour, AUC-PR 0.30-0.59.
+- A documented sanity finding: at H=30, the dummy baseline ALSO reaches
+  sensitivity 1.0 with a LOWER FA/hour than LR — because "always predict
+  PREICTAL" happens to be the majority class there. Explicitly flagged in
+  the notebook as a reason AUC-PR/probability-separation matter more than
+  sensitivity+FA/hour alone at that horizon.
+
+Random Forest: NOT IMPLEMENTED
+- Verified by searching every notebook for RandomForest / random_forest
+  — zero hits anywhere in the repo. No output directory exists for it
+  (outputs/modeling/ contains only logistic_loso_binary/ and
+  tcn_state_deviation_forecasting/).
+
+TCN under the NEW binary LOSO methodology: NOT IMPLEMENTED
+- The only TCN in the repo, EEG_TCN_state_deviation_forecasting.ipynb,
+  uses the OLD 4-class target, the OLD recording-level train/val/test
+  split (not LOSO), and a CROSS-PATIENT-POOLED scaler — none of which
+  meet this requirement's "same patients/labels/horizons/folds/
+  normalization/metrics" condition. It is historical work only,
+  correctly preserved and explicitly deprecation-noted, not a completion
+  of this requirement.
+- No notebook or output directory implements a TCN on the new
+  binary/LOSO pipeline.
+
+Old models that exist purely as historical baselines (not counted toward
+this requirement):
+- EEG_modeling.ipynb — CHB01 only, old pipeline.
+- EEG_TCN_seizure_forecasting.ipynb — CHB24 only, 4-class target.
+- EEG_TCN_state_deviation_forecasting.ipynb — CHB24+CHB12, 4-class
+  target, State Deviation Index (see section below).
+
+----------------------------------------------------------------------
+7. CHANNEL-WISE FEATURES
+----------------------------------------------------------------------
+STATUS: NOT IMPLEMENTED — features are fully channel-averaged
+
+- Verified directly in the feature-extraction code
+  (EEG_CHB24_preprocessing.ipynb, EEG_CHB12_preprocessing.ipynb, and the
+  original EEG_preprocessing.ipynb — all three use the identical
+  extract_features() function, whose own docstring literally reads:
+  "Extract qEEG spectral features from epochs, AVERAGED ACROSS
+  CHANNELS."
+- Concretely, for every band:
+  delta = np.mean([bandpower(ch, sfreq, 0.5, 4) for ch in ep]) —
+  computed per-channel, then averaged across ALL channels into one
+  number. std/var/rms are computed over the flattened all-channel array
+  too.
+- What the feature table actually contains (verified columns): 14 scalar
+  columns per epoch (std, var, rms, delta, theta, alpha, beta,
+  rel_delta, rel_theta, rel_alpha, rel_beta, theta_alpha_ratio,
+  delta_beta_ratio, entropy) — no per-channel columns, no channel
+  dimension anywhere downstream. Channel identity is discarded at the
+  very first feature-extraction step and never recoverable from the
+  saved tables.
+- Not redesigned (as instructed) — this is a factual finding only.
+
+Simple language: right now, if a seizure shows up strongly in one part
+of the brain (say, the temporal lobe) but not others, that signal gets
+blended away — every recording's ~23 channels get averaged into a single
+number per feature, per epoch. Ema's requirement to keep channels
+separate is not done yet anywhere in the pipeline.
+
+----------------------------------------------------------------------
+8. MORE PATIENTS
+----------------------------------------------------------------------
+STATUS: NOT IMPLEMENTED beyond 2 patients in the new pipeline (3 total
+ever processed)
+
+- Fully processed (any pipeline): chb01 (old baseline only,
+  EEG_modeling.ipynb, 360 epochs, no subject_id column since it's
+  single-patient), chb12, chb24.
+- Working with binary labeling / LOSO / the new modeling pipeline: 2
+  PATIENTS ONLY — chb12 and chb24. CHB01 never flows through
+  EEG_binary_preictal_labeling.ipynb (that notebook reads only
+  features_chb24_forecasting.parquet and
+  features_chb12_forecasting.parquet).
+- Raw data currently on disk: only
+  data/raw/chbmit/chb12-summary.txt and chb24-summary.txt (2 files) — no
+  other patient's summary or EDF files present locally (.gitignore
+  excludes data/raw/, so EDFs are downloaded on demand and not persisted
+  between runs).
+- What must be generalized before scaling to 10+ patients (verified
+  concretely, not assumed):
+  1. Montage compatibility is not universal. CHB12's own summary file
+     has multiple montage generations mid-subject; the notebook has to
+     explicitly classify and exclude incompatible recordings before
+     processing (CHB12 itself only used 5 of 10 montage-compatible
+     seizure recordings, "time-limited"). Every new patient needs the
+     same montage-compatibility check — this is not yet a
+     reusable/automated loop, it's bespoke per-notebook logic duplicated
+     (verbatim, by design) across EEG_CHB24_preprocessing.ipynb and
+     EEG_CHB12_preprocessing.ipynb.
+  2. There is currently ONE NOTEBOOK PER PATIENT
+     (EEG_CHB12_preprocessing.ipynb, EEG_CHB24_preprocessing.ipynb)
+     rather than a single parameterized function/loop — this pattern
+     does not scale cleanly to 10 patients without refactoring (which
+     was explicitly out of scope for every task so far).
+  3. Eligibility filtering (row 1) already showed most seizures in a
+     seizure-dense patient can be unusable — more patients does not
+     automatically mean proportionally more usable data.
+
+----------------------------------------------------------------------
+STATE DEVIATION INDEX — SEPARATE AUDIT
+----------------------------------------------------------------------
+What exists: EEG_TCN_state_deviation_forecasting.ipynb (CHB24+CHB12, old
+4-class target).
+
+Mathematical definition (verified directly from the notebook, cell
+15/16):
+1. 14 qEEG features standardized: x_scaled = (x - baseline_mean) /
+   baseline_std, where mean/std are fit ONLY on a TRAIN-recording
+   "stable baseline" (epochs that are neither seizure-overlapping nor
+   within 120s of an upcoming seizure).
+2. Baseline covariance diagnostics run first (rank/condition number) — a
+   plain Mahalanobis distance was NOT adopted directly because of this
+   check; instead:
+3. PCA is fit on the standardized baseline, retaining 99% of baseline
+   variance (VARIANCE_RETAIN = 0.99).
+4. Index defined as:
+   eeg_state_index(epoch) = sqrt( sum_{i=1}^{k} ( pc_i(epoch) /
+   sqrt(lambda_i) )^2 )
+   — a PCA-whitened Euclidean distance, i.e. a Mahalanobis-equivalent
+   distance from the stable baseline. 0 = exactly at baseline.
+5. Sequences of 10 consecutive index values (5 min) feed a causal
+   dilated TCN predicting the old 4-class target.
+
+Is it scientifically/mathematically finalized? No — it is a working
+proof-of-concept with a known, serious failure documented in the
+notebook's own test evaluation: TEST ACCURACY 78.9% BUT MACRO-F1 ONLY
+0.22 — the model collapses to predicting almost exclusively the majority
+>120s class; all three near-term classes have 0 precision and 0 recall.
+This failure is stated in the project record as a large part of the
+motivation for moving to the binary reformulation.
+
+Does it participate in the new binary LOSO experiment? NO — verified by
+direct search. eeg_state_index appears in zero of
+EEG_binary_preictal_labeling.ipynb, EEG_patient_normalization.ipynb,
+EEG_loso_evaluation_splitting.ipynb, or EEG_logistic_loso_binary.ipynb.
+The new pipeline uses the 14 raw qEEG features directly (confirmed in
+the LR notebook's FEATURE_COLS), never the collapsed index. The two
+lines of work (old 4-class+index vs. new binary+LOSO) are currently
+COMPLETELY SEPARATE.
+
+What remains unresolved:
+- The cross-patient-pooled scaler problem (row 3) affects this exact
+  index — it was fit across both patients, not per-patient.
+- Whether a re-derived, per-patient, LOSO-fold-fit version of this same
+  index would help the new binary classifiers has not been tested at
+  all.
+- No comparison yet of "raw 14 features" vs. "single state-deviation
+  scalar" as inputs to LR/RF/TCN under the new methodology.
+
+EXISTING EXPERIMENTAL WORK: the full index definition + one TCN run,
+with a documented failure mode, on the old 4-class target.
+FINALIZED PAPER METHODOLOGY: none of this is finalized — it predates the
+binary/LOSO/per-patient-normalization requirements and hasn't been
+re-run under them.
+
+----------------------------------------------------------------------
+PREPROCESSING STATUS CLARIFICATION
+----------------------------------------------------------------------
+What preprocessing is currently performed (per EEG_preprocessing.ipynb's
+code, and reused verbatim by the CHB12/CHB24 notebooks): EDF loading ->
+Sleep channel-type correction -> EEG-channel-only selection -> 0.5-40 Hz
+band-pass filter (checked against Nyquist before applying) -> 30s
+non-overlapping epoching -> Welch-PSD 14-feature extraction
+(channel-averaged, see row 7) -> rolling-mean/rolling-std/ADF
+stationarity diagnostics -> temporal metadata -> CHB seizure-interval
+labeling -> RobustScaler feature scaling -> save + cold-read-back
+validation.
+
+Important, directly verified fact: EEG_preprocessing.ipynb ITSELF
+CURRENTLY SHOWS execution_count: null ON EVERY SINGLE CODE CELL — 0 of
+17 code cells are executed in the file as it sits on disk right now.
+This is exactly the "notebook state may be stale" case the notebook
+rules warn about: the CODE for REST/SLEEP/CHB01 preprocessing (including
+the required rolling-mean/rolling-std/ADF stationarity block) is present
+and looks complete, but there is NO CURRENT RUNTIME EVIDENCE in this
+file that it actually ran to produce today's outputs.
+- However, outputs/features_rest.*, outputs/features_sleep.*, and
+  outputs/features_chb.* DO EXIST on disk with plausible sizes and
+  matching timestamps (Sep 8, 13:22 — the same batch as most other
+  original notebooks). This strongly suggests the notebook DID run at
+  some point and was later saved with outputs stripped (or the outputs
+  were produced by an earlier version) — but this cannot be certified
+  from the current file alone that today's EEG_preprocessing.ipynb code,
+  if re-run, reproduces those exact saved files. NOT VERIFIED, only
+  plausible.
+- CHB12 and CHB24 preprocessing notebooks, by contrast, ARE fully
+  executed (17/17 and 15/15 code cells respectively) and their outputs
+  are directly traceable to the code that produced them.
+
+Does any unresolved preprocessing issue block the current binary
+modeling work? NO. The binary/normalization/LOSO/LR pipeline (rows 1-6)
+depends only on features_chb24_forecasting.parquet and
+features_chb12_forecasting.parquet, both of which come from
+fully-executed, verified notebooks. EEG_preprocessing.ipynb's stale-
+execution state affects only REST/SLEEP/CHB01 — none of which feed the
+current seizure-forecasting pipeline at all.
+
+Should a final preprocessing audit happen before the paper methodology
+is frozen? Yes — recommended, but not urgent for the current line of
+work. Specifically worth re-verifying before freezing:
+(a) that EEG_preprocessing.ipynb, if re-run top-to-bottom today,
+    reproduces the saved REST/SLEEP/CHB01 outputs exactly;
+(b) that the stationarity diagnostics (rolling mean/std, ADF) were
+    actually interpreted somewhere, not just computed — no markdown cell
+    was found drawing a conclusion from them;
+(c) whether RobustScaler-based global scaling in this notebook (used
+    only for the old CHB01/REST/SLEEP work) is still relevant now that
+    per-patient normalization is the established standard.
+
+======================================================================
+FINAL STATUS TABLE
+======================================================================
+
+#  | Requirement                              | STATUS
+---+-------------------------------------------+---------------------------
+1  | Correct seizure/postictal labels          | COMPLETE
+2  | Binary PREICTAL vs INTERICTAL             | COMPLETE
+3  | 5/15/30 min horizons, one reusable pipe   | COMPLETE
+4  | Patient-specific normalization            | COMPLETE
+5  | Leave-One-Seizure-Out                     | COMPLETE
+6  | New seizure-prediction metrics            | COMPLETE
+7  | Logistic Regression                       | COMPLETE
+8  | Random Forest                             | NOT STARTED
+9  | TCN under new methodology                 | NOT STARTED
+10 | Channel-wise features                     | NOT STARTED
+11 | 10+ patients                              | NOT STARTED (2 of 10+)
+12 | State Deviation Index integration         | PARTIAL / EXPERIMENTAL
+13 | Final preprocessing audit                 | NOT STARTED (non-blocking)
+
+Details per row:
+
+1. Correct seizure/postictal labels — COMPLETE
+   Evidence: EEG_binary_preictal_labeling.ipynb,
+   outputs/labels_binary_preictal.parquet
+   Done: >=30 min postictal exclusion hard-enforced, validated counts.
+   Remaining: 16/35 seizures structurally have no usable preictal window
+   (data property, not a fix).
+
+2. Binary PREICTAL vs INTERICTAL — COMPLETE
+   Evidence: same notebook
+   Done: Replaces 4-class target; old work preserved untouched.
+   Remaining: —
+
+3. 5/15/30 min horizons, one reusable pipeline — COMPLETE
+   Evidence: same notebook, HORIZONS loop
+   Done: One function, 3 calls, verified.
+   Remaining: —
+
+4. Patient-specific normalization — COMPLETE
+   Evidence: EEG_patient_normalization.ipynb, reused in LOSO/LR
+   Done: Per-patient, TRAIN-only, leakage-checked (4 checks x 2
+   patients).
+   Remaining: Old pooled-scaler TCN remains as flagged historical
+   exception.
+
+5. Leave-One-Seizure-Out — COMPLETE
+   Evidence: EEG_loso_evaluation_splitting.ipynb
+   Done: 57 folds, 9 checks x 57 folds all passed.
+   Remaining: 10/19 folds have 0 TEST interictal epochs (limitation, not
+   a bug).
+
+6. New seizure-prediction metrics — COMPLETE
+   Evidence: EEG_seizure_prediction_metrics.ipynb
+   Done: Sensitivity/FA-hour/time-in-warning/AUC-PR primary; NaN-safe;
+   self-tested.
+   Remaining: No significance testing / CIs.
+
+7. Logistic Regression — COMPLETE
+   Evidence: EEG_logistic_loso_binary.ipynb,
+   outputs/modeling/logistic_loso_binary/
+   Done: Trained+evaluated on all 57 folds, both patients, vs. dummy
+   baseline.
+   Remaining: Threshold/C not tuned (documented, not a defect).
+
+8. Random Forest — NOT STARTED
+   Remaining: Whole task.
+
+9. TCN under new methodology — NOT STARTED
+   Note: Old TCN exists but on old target/split/scaler — doesn't count.
+   Remaining: Whole task.
+
+10. Channel-wise features — NOT STARTED
+    Evidence: extract_features() in preprocessing notebooks
+    Remaining: Features are averaged across all channels at extraction;
+    needs redesign.
+
+11. 10+ patients — NOT STARTED
+    Evidence: data/raw/chbmit/ (2 summary files), feature tables
+    Done: chb12, chb24 fully in new pipeline; chb01 old-baseline only.
+    Remaining: Montage-compatibility handling + per-patient notebook
+    pattern need generalizing.
+
+12. State Deviation Index integration — PARTIAL / EXPERIMENTAL, NOT in
+    new pipeline
+    Evidence: EEG_TCN_state_deviation_forecasting.ipynb
+    Done: Full math defined, one TCN run, results documented (incl.
+    failure).
+    Remaining: Not per-patient-scaled, not LOSO-evaluated, not used by
+    binary pipeline at all.
+
+13. Final preprocessing audit — NOT STARTED (and doesn't block current
+    work)
+    Evidence: EEG_preprocessing.ipynb (0/17 cells executed in current
+    file)
+    Done: Code appears complete incl. stationarity diagnostics.
+    Remaining: Re-run verification, stationarity interpretation,
+    scaler-choice review before freezing methodology.
+
+======================================================================
+A. CURRENT PIPELINE (actually implemented, verified)
+======================================================================
+
+                 data/raw/chbmit/{chb12,chb24}-summary.txt (+ EDFs, downloaded on demand)
+                                      |
+                 EEG_CHB12_preprocessing.ipynb / EEG_CHB24_preprocessing.ipynb
+                 (EDF load -> EEG channel select -> 0.5-40Hz filter -> 30s epochs
+                  -> Welch PSD, 14 features AVERAGED ACROSS ALL CHANNELS
+                  -> y_seizure, time_to_next_seizure_sec)
+                                      |
+                outputs/features_chb{12,24}_forecasting.parquet  (per-epoch, 14 features)
+                                      |
+                 EEG_binary_preictal_labeling.ipynb
+                 (time_since_previous_seizure_sec derived fresh from chbXX-summary.txt;
+                  make_binary_labels(): PREICTAL / INTERICTAL / EXCLUDED, H=5/15/30,
+                  postictal exclusion >=30min enforced)
+                                      |
+                outputs/labels_binary_preictal.parquet  (2040 epochs, both patients)
+                                      |
+                 EEG_loso_evaluation_splitting.ipynb
+                 (per-seizure eligibility -> 57 folds = 19 seizures x 3 horizons
+                  -> fit_patient_scalers/transform per fold, TRAIN-only, per-patient
+                  -> 9 leakage checks x 57 folds)
+                                      |
+                outputs/loso_fold_manifest.parquet, loso_epoch_fold_context.parquet
+                                      |
+                 EEG_seizure_prediction_metrics.ipynb  (metric functions, self-tested)
+                                      |
+                 EEG_logistic_loso_binary.ipynb
+                 (rebuild 57 folds fresh, cross-check vs manifest -> fit LogisticRegression
+                  per fold vs DummyClassifier -> pool sensitivity/FA-hour/AUC-PR)
+                                      |
+                outputs/modeling/logistic_loso_binary/  (predictions, metrics, plots)
+
+  SEPARATE, NOT CONNECTED TO THE ABOVE (old 4-class line, kept for history only):
+  features_chb24/12_forecasting.parquet -> EEG_TCN_state_deviation_forecasting.ipynb
+  (pooled-patient scaler -> PCA-whitened eeg_state_index -> TCN -> 4-class forecast_class)
+  -> outputs/modeling/tcn_state_deviation_forecasting/
+
+======================================================================
+B. TARGET PIPELINE FOR THE PAPER
+======================================================================
+
+        data/raw/chbmit/{chb01...chb2x}  (10+ patients, montage-compatibility checked)
+                                |
+        Generalized per-patient preprocessing (parameterized, not one notebook per patient)
+        -> per-CHANNEL qEEG features (channel identity preserved, not averaged away)
+                                |
+        Binary PREICTAL/INTERICTAL labeling, H=5/15/30, postictal exclusion >=30min
+        (same function, now over 10+ patients)
+                                |
+        LOSO fold construction, per-patient/per-channel normalization fit inside each fold
+                                |
+        Seizure-prediction metrics (sensitivity, FA/hour, time-in-warning, AUC-PR)
+                                |
+        +----------------+-----------------+---------------------------+
+        Logistic Reg.    Random Forest     TCN (raw/per-channel features
+        (DONE, 2 pts)    (channel-aware)    or a re-derived, per-patient,
+                                             LOSO-fit State Deviation Index)
+        +----------------+-----------------+---------------------------+
+                                |
+                 Fair model comparison, same folds/metrics/patients
+                                |
+                 Paper methodology frozen (after final preprocessing audit)
+
+======================================================================
+C. EXACT NEXT STEP
+======================================================================
+
+Random Forest on the existing 57 LOSO folds, reusing the exact same
+fold-construction, normalization, and metric functions already validated
+for Logistic Regression.
+
+Why this is the correct dependency order:
+- Rows 1-6 (labels -> normalization -> LOSO -> metrics) are the shared
+  foundation every model in the row-6 comparison must sit on identically
+  — they're done and validated, so nothing upstream needs to change to
+  add a second model.
+- Random Forest requires ZERO NEW INFRASTRUCTURE — same
+  outputs/labels_binary_preictal.parquet input, same
+  build_loso_fold/fit_patient_scalers functions (though RF doesn't
+  strictly need scaled features, using them keeps the comparison
+  apples-to-apples), same metric functions from
+  EEG_seizure_prediction_metrics.ipynb. It's a substitution of one
+  sklearn estimator for another inside an already-proven loop.
+- Doing RF before TCN follows Ema's own stated progression (LR -> RF ->
+  TCN, increasing complexity) and gives a second, still-cheap-to-compute
+  data point before committing to the much larger effort of adapting a
+  TCN (sequence construction, architecture, training loop) to the new
+  per-fold/per-patient methodology.
+- Channel-wise features (row 10) and more patients (row 11) are
+  independent, larger redesigns that would change the INPUT
+  REPRESENTATION itself — doing them before RF/TCN would mean
+  re-validating the whole labeling->LOSO->metrics chain against a new
+  feature table before even having a 3-model comparison. Better to
+  finish the model-comparison requirement on the current representation
+  first, then decide whether channel-wise/more-patients is a revision of
+  this same pipeline or a "v2" experiment for the paper.
+
+======================================================================
+D. REMAINING TASK ORDER (recommended)
+======================================================================
+
+1. Random Forest on the 57 existing LOSO folds (same everything as LR).
+2. TCN under the new methodology — binary target, LOSO folds,
+   per-patient/per-fold normalization, same metrics. (Largest remaining
+   engineering lift; decide whether it consumes the raw 14 features per
+   fold or a re-derived per-patient State Deviation Index — this is a
+   real design choice, not yet made.)
+3. Model comparison writeup — LR vs RF vs TCN, same folds/patients/
+   metrics, sensitivity/FA-hour/AUC-PR primary.
+4. Channel-wise feature redesign (row 10) — touches the earliest
+   preprocessing stage, so doing it after the 3-model comparison avoids
+   re-deriving everything downstream twice; alternatively, could be
+   pulled earlier if Ema considers it a prerequisite for a scientifically
+   valid comparison.
+5. Scale to 10+ patients (row 11) — needs the montage-compatibility logic
+   generalized and ideally happens after the feature representation (row
+   10) is settled, so as not to process 10 patients twice.
+6. Final preprocessing audit (row 13) — before methodology is frozen for
+   the paper, not blocking any of the above.
+7. State Deviation Index re-evaluation under the new methodology (row
+   12) — worth revisiting once RF/TCN exist, to see if it's a useful
+   INPUT to the new pipeline or stays historical.
+
+======================================================================
+E. PAPER READINESS
+======================================================================
+
+Safe to describe in the paper already:
+- The binary labeling methodology + postictal exclusion rule (rows 1-2).
+- The per-patient/LOSO evaluation design (rows 3-5).
+- The seizure-prediction metric definitions (row 6).
+- The LR baseline results as a first data point (row 7), with its
+  documented limitations (CHB12 FA/hour undefined, H=30 dummy-baseline
+  caveat) stated explicitly, not hidden.
+
+Implemented but still needs validation:
+- Whether EEG_preprocessing.ipynb's current code actually reproduces its
+  saved REST/SLEEP/CHB01 outputs (row 13).
+- The stationarity diagnostics' interpretation.
+
+Still experimental:
+- The State Deviation Index (row 12) — real math, one run, a documented
+  failure mode, not connected to the current pipeline.
+
+Not implemented yet:
+- Random Forest, TCN-under-new-methodology, channel-wise features, 10+
+  patients (rows 8-11).
+
+======================================================================
+F. IMPORTANT RISKS
+======================================================================
+
+1. CHB12 has zero measurable false-alarm rate in every fold. Any paper
+   claim about "false alarms/hour" that pools both patients is,
+   numerically, almost entirely a CHB24 number. Reporting a single
+   pooled FA/hour without this caveat would misrepresent the result.
+
+2. At H=30 min, a naive majority-class classifier matches or beats the
+   real model on sensitivity/FA-hour. Any headline result at H=30 needs
+   AUC-PR or probability-separation cited alongside sensitivity, or it
+   overstates what the model is doing.
+
+3. Only 19 of 35 annotated seizures are usable at all, due to seizure
+   clustering. This shrinks the effective sample size for event-level
+   claims (seizure sensitivity is an 18-or-19-out-of-19 statistic, not
+   out of 35) — should be stated plainly in any methods section.
+
+4. Channel-averaging (row 10) may be suppressing the strongest signal.
+   If seizure-related change is regionally localized, the current
+   14-feature representation may be underselling every model's true
+   achievable performance — worth flagging before drawing conclusions
+   about model ARCHITECTURE differences (LR vs RF vs TCN), since a
+   channel-blind representation caps all three similarly.
+
+5. EEG_preprocessing.ipynb's current execution state is unverified — if
+   the paper cites REST/SLEEP/CHB01 preprocessing details, that specific
+   notebook should be re-run and reconciled with its saved outputs
+   first.
+
+6. Small-N generalization risk: every result so far is 2 patients. Any
+   claim of "the model generalizes across subjects" is not yet
+   supported — it's the correct next test (row 11), not yet done.
+
+======================================================================
+No files were modified, no notebooks created, no models trained during
+this audit.
+======================================================================
+
+
+######################################################################
+PROMPT LOG (appended after every prompt; newest entries at the bottom)
+######################################################################
+
+======================================================================
+[2026-09-25, morning (exact time not recorded)] PROMPT 1 -- FRESH STATUS AUDIT (read-only)
+======================================================================
+Task: evidence-based audit of the whole project; no modifications.
+Result: FILES MODIFIED = NONE.
+Key findings:
+- project_state.md lives at .claude/skills/eeg-context/project_state.md
+  (2671 lines, last updated 2026-09-14). This summary.txt entry from
+  Sep 11 (above) is STALE: RF and TCN notebooks were added on Sep 14.
+- LR, RF, TCN all executed on the 57 binary LOSO folds (2 patients).
+- CRITICAL: on CHB24 (the only patient where AUC-PR/FA-h are defined)
+  all models are at chance: ROC-AUC 0.32-0.55, AUC-PR at or below
+  prevalence. Pooled AUC-PR is inflated by CHB12's all-PREICTAL test sets.
+- TCN collapsed to near-constant output (its own degeneracy flag fired);
+  at H=5 its sequence rule leaves only the last 30 s before onset.
+- Metrics: "time in warning" is implemented as lead time; FA/hour
+  merging rewards constant alarms; no chance-level baseline, no CIs.
+- Features channel-averaged; only seizure-containing files used
+  (CHB12 had 18.5 min interictal); labels blind to recording boundaries.
+- Estimates given: core pipeline ~60%, paper-ready ~20-25%.
+
+======================================================================
+[2026-09-25 10:25 -> in progress at 11:07 CEST] PROMPT 2 -- FINAL DATA / PREPROCESSING / CHANNEL-WISE FEATURE LAYER
+======================================================================
+STATUS: IN PROGRESS (implementation done and validated on CHB12/CHB24;
+full-corpus download + processing still running; final notebook run,
+project_state.md update and final report NOT yet done).
+
+Files CREATED so far:
+- chbmit_pipeline.py  (ONE reusable implementation for all CHB-MIT cases:
+  summary parsing incl. montage changes, patient timeline, channel rule,
+  SHA256-verified download, filtering, 30 s epochs, channel-wise +
+  averaged features from the SAME epoch array, metadata, checkpoints, CLI)
+- EEG_chbmit_multipatient_preprocessing.ipynb (32 cells; executed record:
+  inventory, rules, processing, runtime checks, backward validation, QC,
+  seizure-free/LOSO analysis, saving + re-opening outputs)
+- outputs/chbmit_multipatient_v1/ (processing_plan.csv, checkpoints/,
+  validation/; manifests currently hold only a DEV run on chb24+chb12 and
+  will be overwritten by the final full run)
+Files MODIFIED: none of the existing notebooks/outputs. The 78 validated
+legacy output files are SHA256-checked unchanged by the notebook.
+Raw EDFs are cached OUTSIDE the repo (C: has only ~21 GB free):
+  \\wsl.localhost\Ubuntu\home\angela\chbmit_raw (~43 GB when complete).
+
+Decisions / rules implemented:
+- Download from the PhysioNet AWS open-data mirror (physionet.org gave
+  0.13 MB/s = ~4 days; mirror ~5 MB/s); every EDF SHA256-verified.
+- Channel set = 18 standard bipolar "double banana" channels.
+  T8-P8 appears twice (duplicate) and P7-T7 = -(T7-P7) (redundant);
+  the 3 FT9/FT10 channels are missing in 28 files (4 seizures) of
+  chb13/15/16/17/18/19, so they were not used. Nothing interpolated.
+- Excluded recordings: chb12_27/28/29 (referential montage, 13 seizures).
+- Inclusion rule (set before seeing counts): >=3 LOSO-eligible lead
+  seizures and >=1 h interictal. ALL 24 CHB-MIT cases pass -> all
+  processed (683 recordings). chb21 = same person as chb01 (flagged).
+- Annotation conflict chb07_18/19 resolved via official .seizures files
+  (summary is correct). 10 chb24 files are seizure-free but have no clock
+  times (cannot be placed on the timeline).
+
+Validation already achieved (DEV run, chb24 + chb12):
+- Backward reproduction vs the validated 2-patient tables: 17/17
+  recordings, epoch counts, timestamps, seizure intervals, all seizure
+  metadata IDENTICAL; features max relative difference 2.3e-15;
+  binary labels + exclusion reasons IDENTICAL at H=5/15/30
+  (170/372, 445/372, 732/372 PREICTAL/INTERICTAL).
+- QC 17/17 passed on the dev subset.
+- Finding: in chb12_32..42 the two T8-P8 channels are NOT identical
+  (corr 0.87-0.98); rule = first occurrence used; documented.
+- Finding: 12 of 24 eligible seizures (chb12+chb24) still have 0 TEST
+  interictal epochs under the validated within-recording fold rule;
+  83% of interictal data lies in seizure-free recordings, which the
+  validated LOSO code cannot assign to folds.
+- Finding: 260 chb12 epochs change label if distances to seizures in
+  OTHER files are respected (within-recording blind spot).
+
+Problems met and fixed during the task:
+- dup-channel check bug (T8-P8-1 dropped before check) -> fixed, rerun.
+- chb02_16+.edf needs URL-encoding (%2B) -> downloaded manually with
+  checksum; ensure_edf() now URL-quotes names.
+- pandas-3 dtype artifact made label comparison report "not equal"
+  although values were identical -> compare as plain lists.
+
+Progress at 11:07 CEST: download 158/683 files, processing 159/683
+recordings, 0 processing failures.
+
+OPEN / needs supervisor decision (not implemented, by design):
+1. How seizure-free INTERICTAL epochs join LOSO folds (4 options listed
+   in the notebook, Section 12).
+2. Within-recording vs patient-timeline distances for labeling.
+Artifact rejection: NOT implemented (descriptive flat-channel flag only).
+
+Remaining for PROMPT 2: wait for ~520 recordings (~2-2.5 h), run the
+notebook on the full corpus, inspect outputs, update project_state.md,
+final report.
+
+======================================================================
+[2026-09-25 11:07 CEST] PROMPT 3 -- "report about previous prompt + log to summary.txt"
+======================================================================
+Action: appended this PROMPT LOG (entries for prompts 1-3) to summary.txt;
+previous content above left unchanged (backup copied to /tmp).
+From now on a dated entry is appended here after every prompt.
+Background jobs (download + processing) keep running, unaffected.

@@ -1,0 +1,13 @@
+model,patient_id,horizon_minutes,n_folds_evaluated,n_folds,n_seizures_detected,seizure_sensitivity,total_false_alarm_events,total_interictal_hours,false_alarms_per_hour,n_detected_with_time_in_warning,time_in_warning_sec_mean,time_in_warning_sec_median,time_in_warning_sec_min,time_in_warning_sec_max,n_epochs,n_classes_in_test,accuracy,precision_preictal,recall_preictal,f1_preictal,auc_pr,auc_pr_undefined_reason
+tcn,chb12,5,4,4,4,1.0,0,0.0,,4,14.5,15.5,9.0,18.0,4,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+tcn,chb12,15,4,4,4,1.0,0,0.0,,4,562.0,615.5,399.0,618.0,77,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+tcn,chb12,30,4,4,4,1.0,0,0.0,,4,1034.5,1187.0,399.0,1365.0,140,1,0.9142857142857143,1.0,0.9142857142857143,0.9552238805970149,,only one class present in y_true (AUC-PR is not meaningful)
+tcn,chb24,5,12,12,11,0.9166666666666666,7,2.216666666666667,3.1578947368421053,11,14.545454545454545,14.0,3.0,30.0,277,2,0.039711191335740074,0.039711191335740074,1.0,0.0763888888888889,0.06400299029399867,
+tcn,chb24,15,12,12,11,0.9166666666666666,7,2.216666666666667,3.1578947368421053,11,565.4545454545455,612.0,180.0,629.0,479,2,0.4196242171189979,0.430406852248394,0.9436619718309859,0.5911764705882353,0.3392067812207281,
+tcn,chb24,30,12,12,11,0.9166666666666666,7,2.216666666666667,3.1578947368421053,11,1310.0,1639.0,180.0,1788.0,752,2,0.6462765957446809,0.6462765957446809,1.0,0.7851373182552503,0.6079104172608847,
+dummy_most_frequent,chb12,5,4,4,0,0.0,0,0.0,,0,,,,,4,1,0.0,,0.0,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+dummy_most_frequent,chb12,15,4,4,4,1.0,0,0.0,,4,562.0,615.5,399.0,618.0,77,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+dummy_most_frequent,chb12,30,4,4,4,1.0,0,0.0,,4,1034.5,1187.0,399.0,1365.0,140,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+dummy_most_frequent,chb24,5,12,12,0,0.0,0,2.216666666666667,0.0,0,,,,,277,2,0.9602888086642599,,0.0,0.0,0.039711191335740074,
+dummy_most_frequent,chb24,15,12,12,0,0.0,0,2.216666666666667,0.0,0,,,,,479,2,0.5553235908141962,,0.0,0.0,0.44467640918580376,
+dummy_most_frequent,chb24,30,12,12,11,0.9166666666666666,7,2.216666666666667,3.1578947368421053,11,1310.0,1639.0,180.0,1788.0,752,2,0.6462765957446809,0.6462765957446809,1.0,0.7851373182552503,0.6462765957446809,

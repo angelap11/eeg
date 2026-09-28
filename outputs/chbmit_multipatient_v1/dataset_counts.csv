@@ -1,0 +1,3 @@
+patient_id,recordings,seizure_free_recordings,hours,epochs,seizures_annotated_in_processed,seizure_epochs,preictal_h5,eligible_seizures_h5,eligible_seizures_global_h5,interictal_epochs,interictal_h,interictal_in_seizure_free_recs_h,interictal_epochs_global,within_vs_global_label_changes_h5,preictal_h15,eligible_seizures_h15,eligible_seizures_global_h15,preictal_h30,eligible_seizures_h30,eligible_seizures_global_h30,meets_rule_after_processing
+chb24,22,10,21.296388888888888,2555,16,28,122,14,14,1450,12.083333333333334,9.291666666666666,1450,0,324,14,14,548,14,14,True
+chb12,21,11,20.68777777777778,2481,27,57,98,10,9,1479,12.325,11.0,1229,260,251,10,9,380,10,9,True

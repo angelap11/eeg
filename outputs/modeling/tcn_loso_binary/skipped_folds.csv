@@ -1,0 +1,10 @@
+patient_id,horizon_minutes,fold_id,held_out_seizure_id,n_train_epochs,n_test_epochs,n_train_seq,n_test_seq,train_seq_preictal,train_seq_interictal,status
+chb12,5,3,chb_s12_r23_sz0,77,8,32,0,4,28,skipped_zero_test_sequences
+chb24,5,2,chb_s24_r01_sz1,453,4,277,0,11,266,skipped_zero_test_sequences
+chb24,5,3,chb_s24_r03_sz0,450,7,277,0,11,266,skipped_zero_test_sequences
+chb12,15,3,chb_s12_r23_sz0,150,8,105,0,77,28,skipped_zero_test_sequences
+chb24,15,2,chb_s24_r01_sz1,655,4,479,0,213,266,skipped_zero_test_sequences
+chb24,15,3,chb_s24_r03_sz0,652,7,479,0,213,266,skipped_zero_test_sequences
+chb12,30,3,chb_s12_r23_sz0,213,8,168,0,140,28,skipped_zero_test_sequences
+chb24,30,2,chb_s24_r01_sz1,879,4,752,0,486,266,skipped_zero_test_sequences
+chb24,30,3,chb_s24_r03_sz0,876,7,752,0,486,266,skipped_zero_test_sequences

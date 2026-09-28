@@ -1,0 +1,97 @@
+patient_id,horizon_minutes,fold_id,held_out_seizure_id,model,n_test_preictal,n_test_interictal,seizure_detected,n_preictal_alarm_epochs,time_in_warning_sec,n_false_alarm_events,interictal_hours,false_alarms_per_hour,n_epochs,n_classes_in_test,accuracy,precision_preictal,recall_preictal,f1_preictal,auc_pr,auc_pr_undefined_reason
+chb12,5,1,chb_s12_r06_sz0,dummy_most_frequent,1,0,0,0,,0,0.0,,1,1,0.0,,0.0,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,5,1,chb_s12_r06_sz0,tcn,1,0,1,1,15.0,0,0.0,,1,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,5,2,chb_s12_r08_sz0,dummy_most_frequent,1,0,0,0,,0,0.0,,1,1,0.0,,0.0,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,5,2,chb_s12_r08_sz0,tcn,1,0,1,1,16.0,0,0.0,,1,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,5,4,chb_s12_r38_sz0,dummy_most_frequent,1,0,0,0,,0,0.0,,1,1,0.0,,0.0,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,5,4,chb_s12_r38_sz0,tcn,1,0,1,1,18.0,0,0.0,,1,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,5,5,chb_s12_r42_sz0,dummy_most_frequent,1,0,0,0,,0,0.0,,1,1,0.0,,0.0,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,5,5,chb_s12_r42_sz0,tcn,1,0,1,1,9.0,0,0.0,,1,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,15,1,chb_s12_r06_sz0,dummy_most_frequent,21,0,1,21,615.0,0,0.0,,21,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,15,1,chb_s12_r06_sz0,tcn,21,0,1,21,615.0,0,0.0,,21,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,15,2,chb_s12_r08_sz0,dummy_most_frequent,21,0,1,21,616.0,0,0.0,,21,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,15,2,chb_s12_r08_sz0,tcn,21,0,1,21,616.0,0,0.0,,21,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,15,4,chb_s12_r38_sz0,dummy_most_frequent,21,0,1,21,618.0,0,0.0,,21,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,15,4,chb_s12_r38_sz0,tcn,21,0,1,21,618.0,0,0.0,,21,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,15,5,chb_s12_r42_sz0,dummy_most_frequent,14,0,1,14,399.0,0,0.0,,14,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,15,5,chb_s12_r42_sz0,tcn,14,0,1,14,399.0,0,0.0,,14,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,30,1,chb_s12_r06_sz0,dummy_most_frequent,46,0,1,46,1365.0,0,0.0,,46,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,30,1,chb_s12_r06_sz0,tcn,46,0,1,34,1365.0,0,0.0,,46,1,0.7391304347826086,1.0,0.7391304347826086,0.85,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,30,2,chb_s12_r08_sz0,dummy_most_frequent,38,0,1,38,1126.0,0,0.0,,38,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,30,2,chb_s12_r08_sz0,tcn,38,0,1,38,1126.0,0,0.0,,38,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,30,4,chb_s12_r38_sz0,dummy_most_frequent,42,0,1,42,1248.0,0,0.0,,42,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,30,4,chb_s12_r38_sz0,tcn,42,0,1,42,1248.0,0,0.0,,42,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,30,5,chb_s12_r42_sz0,dummy_most_frequent,14,0,1,14,399.0,0,0.0,,14,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb12,30,5,chb_s12_r42_sz0,tcn,14,0,1,14,399.0,0,0.0,,14,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,5,1,chb_s24_r01_sz0,dummy_most_frequent,1,0,0,0,,0,0.0,,1,1,0.0,,0.0,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,5,1,chb_s24_r01_sz0,tcn,1,0,1,1,30.0,0,0.0,,1,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,5,4,chb_s24_r03_sz1,dummy_most_frequent,1,0,0,0,,0,0.0,,1,1,0.0,,0.0,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,5,4,chb_s24_r03_sz1,tcn,1,0,1,1,3.0,0,0.0,,1,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,5,5,chb_s24_r04_sz0,dummy_most_frequent,1,0,0,0,,0,0.0,,1,1,0.0,,0.0,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,5,5,chb_s24_r04_sz0,tcn,1,0,1,1,8.0,0,0.0,,1,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,5,6,chb_s24_r06_sz0,dummy_most_frequent,1,9,0,0,,0,0.075,0.0,10,2,0.9,,0.0,0.0,0.1,
+chb24,5,6,chb_s24_r06_sz0,tcn,1,9,1,1,29.0,1,0.075,13.333333333333334,10,2,0.1,0.1,1.0,0.18181818181818182,0.1111111111111111,
+chb24,5,7,chb_s24_r07_sz0,dummy_most_frequent,0,48,0,0,,0,0.4,0.0,48,1,1.0,,,,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,5,7,chb_s24_r07_sz0,tcn,0,48,0,0,,1,0.4,2.5,48,1,0.0,0.0,,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,5,8,chb_s24_r09_sz0,dummy_most_frequent,1,0,0,0,,0,0.0,,1,1,0.0,,0.0,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,5,8,chb_s24_r09_sz0,tcn,1,0,1,1,5.0,0,0.0,,1,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,5,9,chb_s24_r11_sz0,dummy_most_frequent,1,48,0,0,,0,0.4,0.0,49,2,0.9795918367346939,,0.0,0.0,0.02040816326530612,
+chb24,5,9,chb_s24_r11_sz0,tcn,1,48,1,1,17.0,1,0.4,2.5,49,2,0.02040816326530612,0.02040816326530612,1.0,0.04,0.022727272727272728,
+chb24,5,10,chb_s24_r13_sz0,dummy_most_frequent,1,40,0,0,,0,0.3333333333333333,0.0,41,2,0.975609756097561,,0.0,0.0,0.024390243902439025,
+chb24,5,10,chb_s24_r13_sz0,tcn,1,40,1,1,18.0,1,0.3333333333333333,3.0,41,2,0.024390243902439025,0.024390243902439025,1.0,0.047619047619047616,0.06666666666666667,
+chb24,5,11,chb_s24_r14_sz0,dummy_most_frequent,1,0,0,0,,0,0.0,,1,1,0.0,,0.0,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,5,11,chb_s24_r14_sz0,tcn,1,0,1,1,19.0,0,0.0,,1,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,5,12,chb_s24_r15_sz0,dummy_most_frequent,1,49,0,0,,0,0.4083333333333333,0.0,50,2,0.98,,0.0,0.0,0.02,
+chb24,5,12,chb_s24_r15_sz0,tcn,1,49,1,1,12.0,1,0.4083333333333333,2.4489795918367347,50,2,0.02,0.02,1.0,0.0392156862745098,0.023255813953488372,
+chb24,5,13,chb_s24_r17_sz0,dummy_most_frequent,1,48,0,0,,0,0.4,0.0,49,2,0.9795918367346939,,0.0,0.0,0.02040816326530612,
+chb24,5,13,chb_s24_r17_sz0,tcn,1,48,1,1,5.0,1,0.4,2.5,49,2,0.02040816326530612,0.02040816326530612,1.0,0.04,0.06666666666666667,
+chb24,5,14,chb_s24_r21_sz0,dummy_most_frequent,1,24,0,0,,0,0.2,0.0,25,2,0.96,,0.0,0.0,0.04,
+chb24,5,14,chb_s24_r21_sz0,tcn,1,24,1,1,14.0,1,0.2,5.0,25,2,0.04,0.04,1.0,0.07692307692307693,0.043478260869565216,
+chb24,15,1,chb_s24_r01_sz0,dummy_most_frequent,6,0,0,0,,0,0.0,,6,1,0.0,,0.0,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,15,1,chb_s24_r01_sz0,tcn,6,0,1,6,180.0,0,0.0,,6,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,15,4,chb_s24_r03_sz1,dummy_most_frequent,18,0,0,0,,0,0.0,,18,1,0.0,,0.0,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,15,4,chb_s24_r03_sz1,tcn,18,0,1,18,513.0,0,0.0,,18,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,15,5,chb_s24_r04_sz0,dummy_most_frequent,21,0,0,0,,0,0.0,,21,1,0.0,,0.0,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,15,5,chb_s24_r04_sz0,tcn,21,0,1,21,608.0,0,0.0,,21,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,15,6,chb_s24_r06_sz0,dummy_most_frequent,21,9,0,0,,0,0.075,0.0,30,2,0.3,,0.0,0.0,0.7,
+chb24,15,6,chb_s24_r06_sz0,tcn,21,9,1,21,629.0,1,0.075,13.333333333333334,30,2,0.7,0.7,1.0,0.8235294117647058,0.7152315051661808,
+chb24,15,7,chb_s24_r07_sz0,dummy_most_frequent,0,48,0,0,,0,0.4,0.0,48,1,1.0,,,,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,15,7,chb_s24_r07_sz0,tcn,0,48,0,0,,1,0.4,2.5,48,1,0.0,0.0,,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,15,8,chb_s24_r09_sz0,dummy_most_frequent,21,0,0,0,,0,0.0,,21,1,0.0,,0.0,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,15,8,chb_s24_r09_sz0,tcn,21,0,1,21,605.0,0,0.0,,21,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,15,9,chb_s24_r11_sz0,dummy_most_frequent,21,48,0,0,,0,0.4,0.0,69,2,0.6956521739130435,,0.0,0.0,0.30434782608695654,
+chb24,15,9,chb_s24_r11_sz0,tcn,21,48,1,21,617.0,1,0.4,2.5,69,2,0.30434782608695654,0.30434782608695654,1.0,0.4666666666666667,0.30017729739597826,
+chb24,15,10,chb_s24_r13_sz0,dummy_most_frequent,21,40,0,0,,0,0.3333333333333333,0.0,61,2,0.6557377049180327,,0.0,0.0,0.3442622950819672,
+chb24,15,10,chb_s24_r13_sz0,tcn,21,40,1,21,618.0,1,0.3333333333333333,3.0,61,2,0.3442622950819672,0.3442622950819672,1.0,0.5121951219512195,0.28556515063856336,
+chb24,15,11,chb_s24_r14_sz0,dummy_most_frequent,21,0,0,0,,0,0.0,,21,1,0.0,,0.0,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,15,11,chb_s24_r14_sz0,tcn,21,0,1,21,619.0,0,0.0,,21,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,15,12,chb_s24_r15_sz0,dummy_most_frequent,21,49,0,0,,0,0.4083333333333333,0.0,70,2,0.7,,0.0,0.0,0.3,
+chb24,15,12,chb_s24_r15_sz0,tcn,21,49,1,21,612.0,1,0.4083333333333333,2.4489795918367347,70,2,0.3,0.3,1.0,0.46153846153846156,0.18554509073030961,
+chb24,15,13,chb_s24_r17_sz0,dummy_most_frequent,21,48,0,0,,0,0.4,0.0,69,2,0.6956521739130435,,0.0,0.0,0.30434782608695654,
+chb24,15,13,chb_s24_r17_sz0,tcn,21,48,1,21,605.0,1,0.4,2.5,69,2,0.30434782608695654,0.30434782608695654,1.0,0.4666666666666667,0.334487461403608,
+chb24,15,14,chb_s24_r21_sz0,dummy_most_frequent,21,24,0,0,,0,0.2,0.0,45,2,0.5333333333333333,,0.0,0.0,0.4666666666666667,
+chb24,15,14,chb_s24_r21_sz0,tcn,21,24,1,9,614.0,1,0.2,5.0,45,2,0.2,0.2727272727272727,0.42857142857142855,0.3333333333333333,0.2952888103036956,
+chb24,30,1,chb_s24_r01_sz0,dummy_most_frequent,6,0,1,6,180.0,0,0.0,,6,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,30,1,chb_s24_r01_sz0,tcn,6,0,1,6,180.0,0,0.0,,6,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,30,4,chb_s24_r03_sz1,dummy_most_frequent,18,0,1,18,513.0,0,0.0,,18,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,30,4,chb_s24_r03_sz1,tcn,18,0,1,18,513.0,0,0.0,,18,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,30,5,chb_s24_r04_sz0,dummy_most_frequent,27,0,1,27,788.0,0,0.0,,27,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,30,5,chb_s24_r04_sz0,tcn,27,0,1,27,788.0,0,0.0,,27,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,30,6,chb_s24_r06_sz0,dummy_most_frequent,31,9,1,31,929.0,1,0.075,13.333333333333334,40,2,0.775,0.775,1.0,0.8732394366197183,0.775,
+chb24,30,6,chb_s24_r06_sz0,tcn,31,9,1,31,929.0,1,0.075,13.333333333333334,40,2,0.775,0.775,1.0,0.8732394366197183,0.7097838186951084,
+chb24,30,7,chb_s24_r07_sz0,dummy_most_frequent,0,48,0,0,,1,0.4,2.5,48,1,0.0,0.0,,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,30,7,chb_s24_r07_sz0,tcn,0,48,0,0,,1,0.4,2.5,48,1,0.0,0.0,,0.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,30,8,chb_s24_r09_sz0,dummy_most_frequent,49,0,1,49,1445.0,0,0.0,,49,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,30,8,chb_s24_r09_sz0,tcn,49,0,1,49,1445.0,0,0.0,,49,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,30,9,chb_s24_r11_sz0,dummy_most_frequent,60,48,1,60,1787.0,1,0.4,2.5,108,2,0.5555555555555556,0.5555555555555556,1.0,0.7142857142857143,0.5555555555555556,
+chb24,30,9,chb_s24_r11_sz0,tcn,60,48,1,60,1787.0,1,0.4,2.5,108,2,0.5555555555555556,0.5555555555555556,1.0,0.7142857142857143,0.6872553407622882,
+chb24,30,10,chb_s24_r13_sz0,dummy_most_frequent,60,40,1,60,1788.0,1,0.3333333333333333,3.0,100,2,0.6,0.6,1.0,0.75,0.6,
+chb24,30,10,chb_s24_r13_sz0,tcn,60,40,1,60,1788.0,1,0.3333333333333333,3.0,100,2,0.6,0.6,1.0,0.75,0.9141948997917994,
+chb24,30,11,chb_s24_r14_sz0,dummy_most_frequent,55,0,1,55,1639.0,0,0.0,,55,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,30,11,chb_s24_r14_sz0,tcn,55,0,1,55,1639.0,0,0.0,,55,1,1.0,1.0,1.0,1.0,,only one class present in y_true (AUC-PR is not meaningful)
+chb24,30,12,chb_s24_r15_sz0,dummy_most_frequent,60,49,1,60,1782.0,1,0.4083333333333333,2.4489795918367347,109,2,0.5504587155963303,0.5504587155963303,1.0,0.7100591715976331,0.5504587155963303,
+chb24,30,12,chb_s24_r15_sz0,tcn,60,49,1,60,1782.0,1,0.4083333333333333,2.4489795918367347,109,2,0.5504587155963303,0.5504587155963303,1.0,0.7100591715976331,0.5575521672977078,
+chb24,30,13,chb_s24_r17_sz0,dummy_most_frequent,60,48,1,60,1775.0,1,0.4,2.5,108,2,0.5555555555555556,0.5555555555555556,1.0,0.7142857142857143,0.5555555555555556,
+chb24,30,13,chb_s24_r17_sz0,tcn,60,48,1,60,1775.0,1,0.4,2.5,108,2,0.5555555555555556,0.5555555555555556,1.0,0.7142857142857143,0.5443185316923982,
+chb24,30,14,chb_s24_r21_sz0,dummy_most_frequent,60,24,1,60,1784.0,1,0.2,5.0,84,2,0.7142857142857143,0.7142857142857143,1.0,0.8333333333333334,0.7142857142857143,
+chb24,30,14,chb_s24_r21_sz0,tcn,60,24,1,60,1784.0,1,0.2,5.0,84,2,0.7142857142857143,0.7142857142857143,1.0,0.8333333333333334,0.9100884264416961,

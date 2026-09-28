@@ -1,0 +1,251 @@
+{
+ "dataset_version": "chbmit_multipatient_v1",
+ "created_utc": "2026-09-25T09:01:23.685306+00:00",
+ "full_run": false,
+ "versions": {
+  "python": "3.11.4",
+  "numpy": "2.4.6",
+  "pandas": "3.0.5",
+  "mne": "1.13.0",
+  "scipy": "1.17.1",
+  "pyarrow": "25.0.1"
+ },
+ "raw_dir": "\\\\wsl.localhost\\Ubuntu\\home\\angela\\chbmit_raw",
+ "channel_rule": {
+  "channels": [
+   "FP1-F7",
+   "F7-T7",
+   "T7-P7",
+   "P7-O1",
+   "FP1-F3",
+   "F3-C3",
+   "C3-P3",
+   "P3-O1",
+   "FP2-F4",
+   "F4-C4",
+   "C4-P4",
+   "P4-O2",
+   "FP2-F8",
+   "F8-T8",
+   "T8-P8",
+   "P8-O2",
+   "FZ-CZ",
+   "CZ-PZ"
+  ],
+  "ft_extension_used": false,
+  "files_with_core18": 683,
+  "files_with_core18_but_not_ft3": 28,
+  "seizures_in_those_files": 4,
+  "patients_affected_by_ft3": [
+   "chb13",
+   "chb15",
+   "chb16",
+   "chb17",
+   "chb18",
+   "chb19"
+  ],
+  "files_without_core18": [
+   "chb12_27.edf",
+   "chb12_28.edf",
+   "chb12_29.edf"
+  ]
+ },
+ "inclusion_rule": {
+  "min_eligible_seizures": 3,
+  "min_interictal_hours": 1.0
+ },
+ "n_cases_total": 24,
+ "n_cases_included": 24,
+ "n_recordings_processed": 43,
+ "n_processing_failures": 0,
+ "n_epochs": 5036,
+ "hours_processed": 41.98416666666667,
+ "channelwise_dims": [
+  5036,
+  252
+ ],
+ "averaged_dims": [
+  5036,
+  14
+ ],
+ "backward_validation": {
+  "recordings_old": 17,
+  "recordings_matched": 17,
+  "epoch_counts_equal": true,
+  "t_start_sec_equal": true,
+  "t_center_sec_equal": true,
+  "t_end_sec_equal": true,
+  "y_seizure_equal": true,
+  "next_seizure_start_sec_equal": true,
+  "time_to_next_seizure_sec_equal": true,
+  "seizure_intervals_equal": true,
+  "seizure_id_equal": true,
+  "next_seizure_id_equal": true,
+  "previous_seizure_id_equal": true,
+  "previous_seizure_end_sec_equal": true,
+  "time_since_previous_seizure_sec_equal": true,
+  "labels_h5_equal": true,
+  "exclusion_reasons_h5_equal": true,
+  "labels_h15_equal": true,
+  "exclusion_reasons_h15_equal": true,
+  "labels_h30_equal": true,
+  "exclusion_reasons_h30_equal": true,
+  "features_legacy23_allclose_rtol1e-9": true,
+  "features_legacy23_max_rel_diff": 2.3351925703194543e-15,
+  "chb12_recordings_new": 21,
+  "chb12_recordings_old": 5,
+  "all_checks_passed": true
+ },
+ "qc": [
+  {
+   "check": "no NaN/Inf in channel-wise features",
+   "passed": true,
+   "detail": "0 non-finite values"
+  },
+  {
+   "check": "no NaN/Inf in channel-averaged features",
+   "passed": true,
+   "detail": "0 non-finite values"
+  },
+  {
+   "check": "deterministic channel-wise columns",
+   "passed": true,
+   "detail": "252 cols = 18 channels x 14 features, channel-major order"
+  },
+  {
+   "check": "consistent channel set for every recording",
+   "passed": true,
+   "detail": "43 recordings x 18 channels"
+  },
+  {
+   "check": "epoch length 30 s",
+   "passed": true,
+   "detail": "t_end - t_start"
+  },
+  {
+   "check": "sampling frequency 256 Hz (7680 samples/epoch)",
+   "passed": true,
+   "detail": "all processed EDFs"
+  },
+  {
+   "check": "no epoch crosses a recording boundary",
+   "passed": true,
+   "detail": "t_end <= recording duration; epoch_idx contiguous 0..n-1 per recording"
+  },
+  {
+   "check": "seizure-overlap metadata correct",
+   "passed": true,
+   "detail": "independent interval-intersection recomputation"
+  },
+  {
+   "check": "time-to-next-seizure metadata correct",
+   "passed": true,
+   "detail": "independent brute-force recomputation, non-negative"
+  },
+  {
+   "check": "every annotated seizure in a processed recording overlaps >= 1 epoch",
+   "passed": true,
+   "detail": "43/43; not covered: []"
+  },
+  {
+   "check": "patient identity preserved",
+   "passed": true,
+   "detail": "recording_id <-> patient_id <-> subject_id"
+  },
+  {
+   "check": "recording identity preserved",
+   "passed": true,
+   "detail": "recording_id <-> edf_name 1:1"
+  },
+  {
+   "check": "no duplicate epochs",
+   "passed": true,
+   "detail": "5036 unique (recording_id, epoch_idx)"
+  },
+  {
+   "check": "SHA256 integrity of every processed EDF",
+   "passed": true,
+   "detail": "official SHA256SUMS.txt"
+  },
+  {
+   "check": "duplicate labels: first-occurrence rule applied and non-identical cases documented",
+   "passed": true,
+   "detail": "11 non-identical duplicates documented in validation/duplicate_channel_labels.csv"
+  },
+  {
+   "check": "all recordings accounted for / exclusions documented",
+   "passed": true,
+   "detail": "{'patient_not_included': 640, 'processed': 43, 'excluded_before_processing': 3}"
+  },
+  {
+   "check": "no processing failures",
+   "passed": true,
+   "detail": "0 failures"
+  },
+  {
+   "check": "validated legacy outputs unchanged",
+   "passed": true,
+   "detail": "78 files sha256-compared"
+  }
+ ],
+ "reopen_checks": {
+  "epoch_metadata_shape": [
+   5036,
+   30
+  ],
+  "channelwise_shape": [
+   5036,
+   255
+  ],
+  "averaged_shape": [
+   5036,
+   17
+  ],
+  "cw_columns_ok": true,
+  "av_columns_ok": true,
+  "keys_aligned_meta_av": true,
+  "keys_aligned_meta_cw": true,
+  "cw_finite": true,
+  "av_finite": true,
+  "avg_delta_equals_mean_of_channelwise": true,
+  "avg_theta_equals_mean_of_channelwise": true,
+  "avg_alpha_equals_mean_of_channelwise": true,
+  "avg_beta_equals_mean_of_channelwise": true,
+  "avg_entropy_equals_mean_of_channelwise": true,
+  "seizure_events_rows": 198,
+  "recording_manifest_rows": 686,
+  "schema_json_channelwise_matches": true,
+  "rows_patient_inclusion_manifest.csv": 24,
+  "rows_excluded_recordings.csv": 643,
+  "rows_channel_set.csv": 18,
+  "rows_channel_montage_manifest.csv": 774,
+  "rows_dataset_counts.csv": 2,
+  "rows_qc_checks.csv": 17,
+  "rows_processing_provenance.csv": 43
+ },
+ "artifact_rejection": "NOT IMPLEMENTED (descriptive n_flat_channels flag only)",
+ "unresolved_decisions": [
+  "seizure-free INTERICTAL -> LOSO fold association (Section 12 options)",
+  "within-recording vs patient-timeline distances for labeling (Section 10)"
+ ],
+ "output_sha256": {
+  "channel_montage_manifest.csv": "94082c52d6730581e2bbf22d5c9844189ed58dd922b21f74dd3160a4e5330633",
+  "channel_set.csv": "3aa780c8a29c3ff076a009fdfeae9230f24201ec65bf4dd88a0dcec448f514e3",
+  "dataset_counts.csv": "ffed84b03f44c544373a5466d6f732af981c1212e1a4cb46144e147028d06c54",
+  "epoch_metadata.parquet": "e577765aa39385e46fc14b20cdc2d813cd34dd371149be7f17f3e98a080288ac",
+  "excluded_recordings.csv": "f00f8dc300561f217adb99a82c103deee83fa7566efd758784cf338d2a37203c",
+  "feature_schema.json": "28e99de2864bb63edf7707912bfc6b429e208124a9f8f0fbc0a3af0863753e44",
+  "features_channel_averaged.parquet": "a3c4b93bd5ccbbd069158d3910676559e0d883387b42fb953cdd4c1b58e6c955",
+  "features_channelwise.parquet": "9e2d32adc6caffe22424ab74118e5e7827bd5d26c286fe25b9837a02fba989b7",
+  "patient_inclusion_manifest.csv": "a228c8488d57ee8ef8c718a3c0f48e44f25dc8f6f1e5e1d47695113cb60ec1eb",
+  "preprocessing_validation_report.json": "38a2b229f6cb88fcbe8a2fbf4dbcb1f17d258ad138460165f6329d5450369c5f",
+  "preprocessing_validation_report.md": "09198f008be971238ebe1cc891fc219fdb1283ccf7b5df13844f3bfb676072fd",
+  "processing_plan.csv": "a2d4e677e40365614ec900f9db351f905118a4dd0e06e90b9198970f03dbcece",
+  "processing_provenance.csv": "81eebccd78fd5ff81dbe34ed6b70c9ff99abd6b6af04c5e2047564418448f280",
+  "qc_checks.csv": "e307456877ca0498c15254ae2449edcfb88bec67ecded09a8b4ebe02d225d21a",
+  "recording_manifest.csv": "f4faf3f1946a20b631b9246aeae7d27d1f27bcfb2d5d6c68a04ff0517895fc35",
+  "recording_manifest.parquet": "b49b27d518f967d471e9e3b5c103926be4ddcd7b79e5193361145e0be85eee80",
+  "seizure_events.csv": "87ac72670547a8d4f7f1c0fb6c4ae5fa8098b58bc0fa7e243f068bd5f984bbd8",
+  "seizure_events.parquet": "dd2f33de6d860582291960387c13a91304ff87a5f093be3e9b8fea49eb0180fa"
+ }
+}

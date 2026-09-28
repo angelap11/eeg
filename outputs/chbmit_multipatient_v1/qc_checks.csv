@@ -1,0 +1,19 @@
+check,passed,detail
+no NaN/Inf in channel-wise features,True,0 non-finite values
+no NaN/Inf in channel-averaged features,True,0 non-finite values
+deterministic channel-wise columns,True,"252 cols = 18 channels x 14 features, channel-major order"
+consistent channel set for every recording,True,43 recordings x 18 channels
+epoch length 30 s,True,t_end - t_start
+sampling frequency 256 Hz (7680 samples/epoch),True,all processed EDFs
+no epoch crosses a recording boundary,True,t_end <= recording duration; epoch_idx contiguous 0..n-1 per recording
+seizure-overlap metadata correct,True,independent interval-intersection recomputation
+time-to-next-seizure metadata correct,True,"independent brute-force recomputation, non-negative"
+every annotated seizure in a processed recording overlaps >= 1 epoch,True,43/43; not covered: []
+patient identity preserved,True,recording_id <-> patient_id <-> subject_id
+recording identity preserved,True,recording_id <-> edf_name 1:1
+no duplicate epochs,True,"5036 unique (recording_id, epoch_idx)"
+SHA256 integrity of every processed EDF,True,official SHA256SUMS.txt
+duplicate labels: first-occurrence rule applied and non-identical cases documented,True,11 non-identical duplicates documented in validation/duplicate_channel_labels.csv
+all recordings accounted for / exclusions documented,True,"{'patient_not_included': 640, 'processed': 43, 'excluded_before_processing': 3}"
+no processing failures,True,0 failures
+validated legacy outputs unchanged,True,78 files sha256-compared

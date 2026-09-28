@@ -1,0 +1,46 @@
+{
+  "task": "Binary PREICTAL vs INTERICTAL detection, patient-specific LOSO, Logistic Regression baseline",
+  "model": "LogisticRegression",
+  "model_params": {
+    "class_weight": "balanced",
+    "random_state": 42,
+    "solver": "lbfgs",
+    "max_iter": 1000
+  },
+  "naive_baseline": "DummyClassifier(strategy='most_frequent')",
+  "random_state": 42,
+  "decision_threshold": 0.5,
+  "threshold_tuned_on_test": false,
+  "horizons_minutes": [
+    5,
+    15,
+    30
+  ],
+  "patients": [
+    "chb12",
+    "chb24"
+  ],
+  "patients_pooled_across": false,
+  "feature_cols": [
+    "std",
+    "var",
+    "rms",
+    "delta",
+    "theta",
+    "alpha",
+    "beta",
+    "rel_delta",
+    "rel_theta",
+    "rel_alpha",
+    "rel_beta",
+    "theta_alpha_ratio",
+    "delta_beta_ratio",
+    "entropy"
+  ],
+  "epoch_sec": 30.0,
+  "n_folds_total": 57,
+  "source_labels_table": "C:\\Users\\angela\\Downloads\\EEG_timeseries-main\\EEG_timeseries-main\\outputs\\labels_binary_preictal.parquet",
+  "source_loso_manifest_crosscheck": "C:\\Users\\angela\\Downloads\\EEG_timeseries-main\\EEG_timeseries-main\\outputs\\loso_fold_manifest.parquet",
+  "normalization": "per-fold, per-patient StandardScaler fit on TRAIN rows only (reused verbatim from EEG_patient_normalization.ipynb / EEG_loso_evaluation_splitting.ipynb)",
+  "metrics_framework_source": "EEG_seizure_prediction_metrics.ipynb"
+}
